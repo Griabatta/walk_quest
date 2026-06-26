@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#8b6f47" />
-  <meta name="description" content="Личный PWA-квест для вечерних прогулок" />
+  <meta name="description" content="Личный PWA-квест для вечерних прогулок с Яндекс Картами" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Вечерний квест" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -14,13 +14,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="icon" href="icons/icon-192.png" />
-
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIINfQJEA2D1x3z1nHr/8n+fJ+0jzjwA2lI="
-    crossorigin=""
-  />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -37,7 +30,7 @@
       <section id="startCard" class="card hero-card">
         <div class="moon">☾</div>
         <h2>Куда сегодня дойдём?</h2>
-        <p class="muted">Задай цель в шагах — приложение подберёт случайную точку с пешим маршрутом и засчитает победу, когда ты окажешься рядом.</p>
+        <p class="muted">Задай цель в шагах — приложение подберёт случайную точку и построит до неё пеший маршрут через Яндекс Карты.</p>
 
         <label class="field-label" for="stepsInput">Сколько шагов пройти</label>
         <div class="input-row">
@@ -65,6 +58,14 @@
                 <option value="50">50</option>
                 <option value="75" selected>75</option>
                 <option value="100">100</option>
+              </select>
+            </label>
+            <label>
+              Сколько вариантов проверять
+              <select id="attemptsInput">
+                <option value="8">8 — быстрее</option>
+                <option value="12" selected>12 — нормально</option>
+                <option value="18">18 — точнее</option>
               </select>
             </label>
           </div>
@@ -108,11 +109,11 @@
         <div id="map" aria-label="Карта прогулки"></div>
 
         <div class="actions">
-          <a id="routeLink" class="secondary" href="#" target="_blank" rel="noopener">Маршрут в Google Maps</a>
+          <a id="routeLink" class="secondary" href="#" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
           <button id="centerBtn" class="secondary" type="button">Центрировать</button>
         </div>
 
-        <p class="hint">Держи приложение открытым во время прогулки. Маршрут считается через OpenStreetMap/OSRM, а в фоне браузер может реже обновлять геолокацию.</p>
+        <p class="hint">Держи приложение открытым во время прогулки. Маршрут и карта работают через Яндекс Карты; геолокации нужен HTTPS.</p>
       </section>
 
       <section id="winCard" class="card win-card hidden" aria-live="polite">
@@ -137,11 +138,7 @@
 
   <div id="confetti" class="confetti hidden" aria-hidden="true"></div>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=bd809e5e-0ef7-406a-848f-e83d08542653&lang=ru_RU" type="text/javascript"></script>
   <script src="app.js"></script>
 </body>
 </html>

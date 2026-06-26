@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#8b6f47" />
-  <meta name="description" content="Личный PWA-квест для вечерних прогулок с Яндекс Картами" />
+  <meta name="description" content="Личный PWA-квест для вечерних прогулок с детективными миссиями и Яндекс Картами" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Вечерний квест" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -30,7 +30,7 @@
       <section id="startCard" class="card hero-card">
         <div class="moon">☾</div>
         <h2>Куда сегодня дойдём?</h2>
-        <p class="muted">Задай цель в шагах — приложение подберёт случайную точку и построит до неё пеший маршрут через Яндекс Карты.</p>
+        <p class="muted">Задай цель в шагах — приложение подберёт безопасную точку, построит пеший маршрут через Яндекс Карты и превратит прогулку в маленькое расследование.</p>
 
         <label class="field-label" for="stepsInput">Сколько шагов пройти</label>
         <div class="input-row">
@@ -80,7 +80,7 @@
         <div class="quest-header">
           <div>
             <p class="eyebrow">сегодняшняя миссия</p>
-            <h2 id="missionTitle">Тайная точка</h2>
+            <h2 id="missionTitle">Детективная миссия</h2>
           </div>
           <button id="resetBtn" class="ghost" type="button">Новая</button>
         </div>
@@ -120,6 +120,7 @@
         <div class="badge">✨</div>
         <h2>Миссия выполнена!</h2>
         <p id="winMessage">Ты дошла. Прогулка засчитана.</p>
+        <div id="bonusTask" class="bonus-task hidden"></div>
         <button id="againBtn" class="primary" type="button">Ещё одна миссия</button>
       </section>
 

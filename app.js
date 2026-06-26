@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'eveningWalkQuest.history.v2.yandex';
+const STORAGE_KEY = 'eveningWalkQuest.history.v3.detectiveYandex';
 
 const el = {
   installBtn: document.getElementById('installBtn'),
@@ -24,7 +24,8 @@ const el = {
   stepsText: document.getElementById('stepsText'),
   routeLink: document.getElementById('routeLink'),
   historyList: document.getElementById('historyList'),
-  confetti: document.getElementById('confetti')
+  confetti: document.getElementById('confetti'),
+  bonusTask: document.getElementById('bonusTask')
 };
 
 const state = {
@@ -37,25 +38,74 @@ const state = {
   current: null,
   target: null,
   routeMeters: null,
+  activeCase: null,
+  activeSong: null,
   won: false,
   ymapsReady: false
 };
 
-const titles = [
-  'Тайная точка вечера',
-  'Маленькая экспедиция',
-  'Прогулочный портал',
-  'Маршрут для выдоха',
-  'Лунная миссия',
-  'Точка “я молодец”'
+const detectiveCases = [
+  {
+    title: 'Дело о пропавшем следе',
+    text: 'На карте всплыла улика. Нужно добраться до отмеченной зоны и проверить, что там скрывает вечер.'
+  },
+  {
+    title: 'Встреча с информатором',
+    text: 'Информатор согласился выйти на связь только в этой точке. Твоя задача — дойти до места встречи.'
+  },
+  {
+    title: 'Операция “Тихий квартал”',
+    text: 'Есть подозрение, что где-то там осталась важная деталь. Дойди до зоны и закрой сегодняшний эпизод расследования.'
+  },
+  {
+    title: 'Кодовое имя: Лунный след',
+    text: 'След ведёт через город. Иди спокойно: дело не терпит суеты, но любит уверенные шаги.'
+  },
+  {
+    title: 'Проверка алиби',
+    text: 'Один подозрительно спокойный уголок требует проверки. Дойди до точки и зафиксируй результат.'
+  },
+  {
+    title: 'Архивное дело №7',
+    text: 'В старом деле появилась новая координата. Нужно выйти на место и подтвердить находку.'
+  },
+  {
+    title: 'Секретный маршрут',
+    text: 'Карта выдала направление, но детали засекречены. Дойди до зоны — там станет ясно, что миссия выполнена.'
+  },
+  {
+    title: 'Ночная ориентировка',
+    text: 'Поступил сигнал из случайной точки города. Проверь место и возвращай себе звание главного детектива прогулок.'
+  }
 ];
 
-const missionPhrases = [
-  'Сегодня цель выбрана картой. Идём спокойно, без гонки — просто доходим до своей точки.',
-  'У тебя есть маршрут, вечер и маленький повод выйти из дома. Это уже победа наполовину.',
-  'Иди в своём темпе. Приложение засчитает миссию, когда ты окажешься в зоне цели.',
-  'Твоя задача простая: дойти до отмеченной зоны и забрать заслуженное “ты молодец”.'
+const winSongs = [
+  'The xx — Intro',
+  'M83 — Midnight City',
+  'Stromae — Santé',
+  'Kavinsky — Nightcall',
+  'Zaz — Je veux',
+  'Vetusta Morla — Copenhague',
+  'Lana Del Rey — Say Yes To Heaven',
+  'Florence + The Machine — Dog Days Are Over',
+  'Coldplay — Adventure of a Lifetime',
+  'Daft Punk — Instant Crush',
+  'AURORA — Runaway',
+  'Jain — Makeba',
+  'Queen — Don’t Stop Me Now',
+  'Manu Chao — Me gustas tú',
+  'Natalia Lafourcade — Hasta la raíz'
 ];
+
+const waterWords = [
+  'река', 'речка', 'озеро', 'пруд', 'водоём', 'водоем', 'море', 'залив', 'бухта', 'канал',
+  'водохранилище', 'ручей', 'протока', 'набережная реки', 'пляж', 'harbour', 'river', 'lake',
+  'pond', 'sea', 'bay', 'canal', 'reservoir', 'stream', 'water'
+];
+
+const goodGeocoderKinds = new Set([
+  'house', 'street', 'metro', 'district', 'locality', 'area', 'province', 'country', 'vegetation', 'railway', 'station', 'other'
+]);
 
 function setStatus(text) { el.statusText.textContent = text; }
 function formatSteps(n) { return new Intl.NumberFormat('ru-RU').format(Math.round(n)); }
@@ -155,11 +205,14 @@ function setUserPlacemark(coords) {
 }
 
 function setTargetObjects(target, radius) {
-  state.targetPlacemark = new ymaps.Placemark(target, { hintContent: 'Цель прогулки' }, {
+  state.targetPlacemark = new ymaps.Placemark(target, {
+    hintContent: 'Точка миссии',
+    balloonContent: 'Здесь нужно проверить улику'
+  }, {
     preset: 'islands#redIcon'
   });
   state.winCircle = new ymaps.Circle([target, radius], {
-    hintContent: 'Зона победы'
+    hintContent: 'Зона выполнения миссии'
   }, {
     fillColor: '#4f7d5a33',
     strokeColor: '#4f7d5a',
@@ -170,50 +223,97 @@ function setTargetObjects(target, radius) {
   state.map.geoObjects.add(state.targetPlacemark);
 }
 
-async function buildYandexRoute(from, to, options = {}) {
+async function getPlaceInfo(coords) {
+  try {
+    const result = await ymaps.geocode(coords, { results: 1 });
+    const first = result.geoObjects.get(0);
+    if (!first) return { ok: false, reason: 'no-geocode-result', name: '' };
+
+    const address = first.getAddressLine() || first.properties.get('name') || '';
+    const meta = first.properties.get('metaDataProperty.GeocoderMetaData') || {};
+    const kind = String(meta.kind || '').toLowerCase();
+    const lowerAddress = address.toLowerCase();
+    const waterLike = kind === 'hydro' || waterWords.some(word => lowerAddress.includes(word));
+
+    if (waterLike) return { ok: false, reason: 'water', kind, name: address };
+
+    // Если Яндекс вернул неизвестный тип, не блокируем сразу: маршрут ниже всё равно отфильтрует недоступные места.
+    const kindLooksUsable = !kind || goodGeocoderKinds.has(kind) || kind !== 'hydro';
+    return { ok: kindLooksUsable, reason: kindLooksUsable ? 'ok' : 'bad-kind', kind, name: address };
+  } catch (error) {
+    console.warn('Geocode check failed', error);
+    // Если геокодинг не сработал, не считаем это критической ошибкой, но маршрут всё равно должен построиться.
+    return { ok: true, reason: 'geocode-unavailable', name: '' };
+  }
+}
+
+async function buildYandexRoute(from, to) {
   const route = await ymaps.route([from, to], {
     routingMode: 'pedestrian',
     mapStateAutoApply: false
   });
   const meters = route.getLength();
   if (!Number.isFinite(meters) || meters <= 0) throw new Error('Не удалось получить длину маршрута');
-  if (options.addToMap) {
-    route.getPaths().options.set({
-      strokeColor: '#8b6f47',
-      strokeWidth: 5,
-      opacity: 0.9
-    });
-    route.getWayPoints().options.set('visible', false);
-    state.map.geoObjects.add(route);
-    state.routeObject = route;
-  }
   return { route, meters };
 }
 
-async function pickRouteByGoal(from, targetMeters, attempts) {
+function makeCandidatePoints(from, targetMeters, attempts) {
   const candidates = [];
-  for (let i = 0; i < attempts; i++) {
-    const directDistance = targetMeters * (0.38 + Math.random() * 0.42);
+  const count = Math.max(attempts, 12);
+
+  for (let i = 0; i < count; i++) {
+    // Для пешего маршрута прямая дистанция обычно меньше реальной длины пути.
+    const directDistance = targetMeters * (0.28 + Math.random() * 0.52);
     const bearing = Math.random() * 360;
     candidates.push(destinationPoint(from, directDistance, bearing));
   }
 
+  // Несколько более близких запасных вариантов: они чаще попадают в нормальную городскую сетку.
+  for (let i = 0; i < 6; i++) {
+    const directDistance = Math.max(250, Math.min(targetMeters * (0.18 + Math.random() * 0.22), 1800));
+    const bearing = Math.random() * 360;
+    candidates.push(destinationPoint(from, directDistance, bearing));
+  }
+
+  return candidates;
+}
+
+async function pickSafeFallback(from, targetMeters) {
+  const fallbackCandidates = makeCandidatePoints(from, Math.min(targetMeters, 1800), 18);
+  for (const point of fallbackCandidates) {
+    const info = await getPlaceInfo(point);
+    if (info.ok) return { to: point, route: null, meters: null, fallback: true, placeInfo: info };
+  }
+
+  // Последний вариант — очень близкая точка. Она не идеальная, но меньше риск увести далеко в странное место.
+  return {
+    to: destinationPoint(from, 300, Math.random() * 360),
+    route: null,
+    meters: null,
+    fallback: true,
+    placeInfo: { ok: true, reason: 'last-resort', name: '' }
+  };
+}
+
+async function pickRouteByGoal(from, targetMeters, attempts) {
+  const candidates = makeCandidatePoints(from, targetMeters, attempts);
   const results = [];
+
   for (let i = 0; i < candidates.length; i++) {
-    setStatus(`Подбираю пеший маршрут через Яндекс Карты… ${i + 1}/${candidates.length}`);
+    setStatus(`Ищу безопасную точку и пеший маршрут… ${i + 1}/${candidates.length}`);
     try {
+      const placeInfo = await getPlaceInfo(candidates[i]);
+      if (!placeInfo.ok) continue;
+
       const { route, meters } = await buildYandexRoute(from, candidates[i]);
       const diff = Math.abs(meters - targetMeters);
-      results.push({ to: candidates[i], route, meters, diff });
+      results.push({ to: candidates[i], route, meters, diff, placeInfo });
     } catch (error) {
       console.warn('Route candidate failed', error);
     }
   }
 
-  if (!results.length) {
-    const fallback = destinationPoint(from, targetMeters * 0.55, Math.random() * 360);
-    return { to: fallback, route: null, meters: null, fallback: true };
-  }
+  if (!results.length) return pickSafeFallback(from, targetMeters);
 
   results.sort((a, b) => a.diff - b.diff);
   return results[0];
@@ -242,6 +342,14 @@ function startWatching() {
   );
 }
 
+function makeMissionText(caseItem, picked) {
+  const place = picked.placeInfo?.name ? ` Ориентир: ${picked.placeInfo.name}.` : '';
+  if (picked.fallback) {
+    return `${caseItem.text}${place} Дойди до отмеченной зоны — дело будет закрыто.`;
+  }
+  return `${caseItem.text}${place} Маршрут построен, можно начинать расследование.`;
+}
+
 async function startQuest() {
   try {
     state.won = false;
@@ -261,6 +369,7 @@ async function startQuest() {
     el.startCard.classList.add('hidden');
     el.winCard.classList.add('hidden');
     el.questCard.classList.remove('hidden');
+    if (el.bonusTask) el.bonusTask.classList.add('hidden');
 
     initMap(current);
     clearMapObjects();
@@ -269,6 +378,8 @@ async function startQuest() {
     const picked = await pickRouteByGoal(current, targetMeters, attempts);
     state.target = picked.to;
     state.routeMeters = picked.meters;
+    state.activeCase = randomItem(detectiveCases);
+    state.activeSong = randomItem(winSongs);
 
     clearMapObjects();
     setUserPlacemark(current);
@@ -288,17 +399,14 @@ async function startQuest() {
       state.map.setBounds(ymaps.util.bounds.fromPoints([current, state.target]), { checkZoomRange: true, zoomMargin: 48 });
     }
 
-    const title = randomItem(titles);
-    el.missionTitle.textContent = title;
-    el.missionText.textContent = picked.fallback
-      ? 'Яндекс не смог построить маршрут к случайным точкам, поэтому цель выбрана запасным способом. Дойди до зоны на карте.'
-      : randomItem(missionPhrases);
+    el.missionTitle.textContent = state.activeCase.title;
+    el.missionText.textContent = makeMissionText(state.activeCase, picked);
     el.stepsText.textContent = `${formatSteps(steps)} шагов`;
     el.winRadiusText.textContent = `${radius} м`;
-    el.routeDistanceText.textContent = picked.meters ? formatMeters(picked.meters) : 'примерно';
+    el.routeDistanceText.textContent = picked.meters ? formatMeters(picked.meters) : 'тайная точка';
     el.routeLink.href = makeYandexRouteLink(current, state.target);
 
-    setStatus('Маршрут готов. Можно идти ✨');
+    setStatus('Миссия готова. Можно идти 🕵️‍♀️');
     updateDistance();
     startWatching();
   } catch (error) {
@@ -321,7 +429,17 @@ function makeYandexRouteLink(from, to) {
 function completeMission() {
   state.won = true;
   el.winCard.classList.remove('hidden');
-  el.winMessage.textContent = `Ты дошла до цели. Маршрут ${state.routeMeters ? formatMeters(state.routeMeters) : 'засчитан'}. Ты молодец 🌙`;
+  el.winMessage.textContent = `Дело закрыто. Маршрут ${state.routeMeters ? formatMeters(state.routeMeters) : 'засчитан'}. Ты молодец 🌙`;
+
+  if (el.bonusTask) {
+    el.bonusTask.innerHTML = `
+      <span>Финальная улика</span>
+      <strong>Послушай: ${escapeHtml(state.activeSong || randomItem(winSongs))}</strong>
+      <small>Это маленький саундтрек к победе. Можно включить по дороге домой или уже дома.</small>
+    `;
+    el.bonusTask.classList.remove('hidden');
+  }
+
   saveHistory();
   renderHistory();
   celebrate();
@@ -336,7 +454,9 @@ function saveHistory() {
     steps: Number(el.stepsInput.value) || 4000,
     radius: Number(el.radiusInput.value) || 75,
     routeMeters: state.routeMeters,
-    provider: 'Яндекс Карты'
+    provider: 'Яндекс Карты',
+    caseTitle: state.activeCase?.title || 'Детективная миссия',
+    song: state.activeSong || null
   });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items.slice(0, 30)));
 }
@@ -358,7 +478,9 @@ function renderHistory() {
   for (const item of items) {
     const li = document.createElement('li');
     const date = new Date(item.date);
-    li.innerHTML = `<strong>${date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })} · ${formatSteps(item.steps)} шагов</strong>${item.routeMeters ? `Маршрут: ${formatMeters(item.routeMeters)} · ` : ''}Радиус: ${item.radius} м · ${item.provider || 'карта'}`;
+    const routePart = item.routeMeters ? `Маршрут: ${formatMeters(item.routeMeters)} · ` : '';
+    const songPart = item.song ? `<br><span>Финальная песня: ${escapeHtml(item.song)}</span>` : '';
+    li.innerHTML = `<strong>${date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })} · ${escapeHtml(item.caseTitle || 'Миссия')} · ${formatSteps(item.steps)} шагов</strong>${routePart}Радиус: ${item.radius} м · ${item.provider || 'карта'}${songPart}`;
     el.historyList.append(li);
   }
 }
@@ -399,6 +521,15 @@ function playWinSound() {
   } catch (error) {
     console.warn('Sound error', error);
   }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
 function setupInstallPrompt() {

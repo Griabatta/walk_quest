@@ -153,6 +153,26 @@ h2 { margin-bottom: 12px; font-size: clamp(25px, 6vw, 36px); letter-spacing: -.0
 .actions { display: flex; gap: 10px; margin-top: 12px; }
 .win-card { text-align: center; border-color: rgba(79, 125, 90, .30); }
 .badge { font-size: 58px; }
+.bonus-task {
+  margin: 18px 0 4px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(79, 125, 90, .12);
+  border: 1px solid rgba(79, 125, 90, .22);
+  text-align: left;
+}
+.bonus-task span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent-2);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 11px;
+  font-weight: 900;
+}
+.bonus-task strong { display: block; font-size: 18px; margin-bottom: 6px; }
+.bonus-task small { color: var(--muted); line-height: 1.45; display: block; }
+
 .history-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .history-list li {
   background: rgba(255, 255, 255, .58);

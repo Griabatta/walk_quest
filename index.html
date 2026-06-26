@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#8b6f47" />
+  <meta name="description" content="Личный PWA-квест для вечерних прогулок" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Вечерний квест" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Вечерний квест</title>
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQJEA2D1x3z1nHr/8n+fJ+0jzjwA2lI="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">личная прогулка</p>
+        <h1>Вечерний квест</h1>
+      </div>
+      <button id="installBtn" class="ghost hidden" type="button">Установить</button>
+    </header>
+
+    <main>
+      <section id="startCard" class="card hero-card">
+        <div class="moon">☾</div>
+        <h2>Куда сегодня дойдём?</h2>
+        <p class="muted">Задай цель в шагах — приложение подберёт случайную точку с пешим маршрутом и засчитает победу, когда ты окажешься рядом.</p>
+
+        <label class="field-label" for="stepsInput">Сколько шагов пройти</label>
+        <div class="input-row">
+          <input id="stepsInput" type="number" inputmode="numeric" min="500" max="30000" step="500" value="4000" />
+          <span>шагов</span>
+        </div>
+
+        <div class="chips" aria-label="Быстрый выбор шагов">
+          <button class="chip" data-steps="2000" type="button">2 000</button>
+          <button class="chip" data-steps="4000" type="button">4 000</button>
+          <button class="chip" data-steps="7000" type="button">7 000</button>
+          <button class="chip" data-steps="10000" type="button">10 000</button>
+        </div>
+
+        <details class="settings">
+          <summary>Настройки</summary>
+          <div class="settings-grid">
+            <label>
+              Длина шага, м
+              <input id="strideInput" type="number" min="0.4" max="1" step="0.01" value="0.65" />
+            </label>
+            <label>
+              Радиус победы, м
+              <select id="radiusInput">
+                <option value="50">50</option>
+                <option value="75" selected>75</option>
+                <option value="100">100</option>
+              </select>
+            </label>
+          </div>
+        </details>
+
+        <button id="startBtn" class="primary" type="button">Начать миссию</button>
+        <p id="statusText" class="status">Нужно разрешить геолокацию, когда телефон спросит.</p>
+        <p id="iosHint" class="ios-hint hidden">На iPhone установка делается через Safari: Поделиться → На экран «Домой».</p>
+      </section>
+
+      <section id="questCard" class="card quest-card hidden">
+        <div class="quest-header">
+          <div>
+            <p class="eyebrow">сегодняшняя миссия</p>
+            <h2 id="missionTitle">Тайная точка</h2>
+          </div>
+          <button id="resetBtn" class="ghost" type="button">Новая</button>
+        </div>
+
+        <p id="missionText" class="mission-text"></p>
+
+        <div class="stats-grid">
+          <div class="stat">
+            <span>До зоны</span>
+            <strong id="distanceText">—</strong>
+          </div>
+          <div class="stat">
+            <span>Маршрут</span>
+            <strong id="routeDistanceText">—</strong>
+          </div>
+          <div class="stat">
+            <span>Радиус победы</span>
+            <strong id="winRadiusText">75 м</strong>
+          </div>
+          <div class="stat">
+            <span>Цель</span>
+            <strong id="stepsText">4 000</strong>
+          </div>
+        </div>
+
+        <div id="map" aria-label="Карта прогулки"></div>
+
+        <div class="actions">
+          <a id="routeLink" class="secondary" href="#" target="_blank" rel="noopener">Маршрут в Google Maps</a>
+          <button id="centerBtn" class="secondary" type="button">Центрировать</button>
+        </div>
+
+        <p class="hint">Держи приложение открытым во время прогулки. Маршрут считается через OpenStreetMap/OSRM, а в фоне браузер может реже обновлять геолокацию.</p>
+      </section>
+
+      <section id="winCard" class="card win-card hidden" aria-live="polite">
+        <div class="badge">✨</div>
+        <h2>Миссия выполнена!</h2>
+        <p id="winMessage">Ты дошла. Прогулка засчитана.</p>
+        <button id="againBtn" class="primary" type="button">Ещё одна миссия</button>
+      </section>
+
+      <section class="card history-card">
+        <div class="quest-header">
+          <div>
+            <p class="eyebrow">маленькая летопись</p>
+            <h2>История прогулок</h2>
+          </div>
+          <button id="clearHistoryBtn" class="ghost" type="button">Очистить</button>
+        </div>
+        <ul id="historyList" class="history-list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <div id="confetti" class="confetti hidden" aria-hidden="true"></div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="app.js"></script>
+</body>
+</html>

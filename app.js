@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'eveningWalkQuest.history.v3.detectiveYandex';
+const STORAGE_KEY = 'eveningWalkQuest.history.v4.cozyDetectiveYandex';
 
 const el = {
   installBtn: document.getElementById('installBtn'),
@@ -16,8 +16,10 @@ const el = {
   clearHistoryBtn: document.getElementById('clearHistoryBtn'),
   statusText: document.getElementById('statusText'),
   iosHint: document.getElementById('iosHint'),
+  caseNumber: document.getElementById('caseNumber'),
   missionTitle: document.getElementById('missionTitle'),
   missionText: document.getElementById('missionText'),
+  clueText: document.getElementById('clueText'),
   distanceText: document.getElementById('distanceText'),
   routeDistanceText: document.getElementById('routeDistanceText'),
   winRadiusText: document.getElementById('winRadiusText'),
@@ -25,7 +27,8 @@ const el = {
   routeLink: document.getElementById('routeLink'),
   historyList: document.getElementById('historyList'),
   confetti: document.getElementById('confetti'),
-  bonusTask: document.getElementById('bonusTask')
+  bonusTask: document.getElementById('bonusTask'),
+  winMessage: document.getElementById('winMessage')
 };
 
 const state = {
@@ -46,55 +49,63 @@ const state = {
 
 const detectiveCases = [
   {
-    title: 'Дело о пропавшем следе',
-    text: 'На карте всплыла улика. Нужно добраться до отмеченной зоны и проверить, что там скрывает вечер.'
+    title: 'Проверить улику у старой кофейни',
+    text: 'Бариста слышал что-то странное вчера вечером. Лучше дойти до места и расспросить его лично.',
+    clue: 'Говорят, улика появляется только в закатном свете.'
   },
   {
-    title: 'Встреча с информатором',
-    text: 'Информатор согласился выйти на связь только в этой точке. Твоя задача — дойти до места встречи.'
+    title: 'Встретиться с информатором',
+    text: 'Информатор согласился выйти на связь только в отмеченной точке. Дойди туда спокойно и без суеты.',
+    clue: 'Он обычно ждёт там, где горят самые тёплые окна.'
+  },
+  {
+    title: 'Дело о пропавшем следе',
+    text: 'На карте появился след, который ведёт через город. Нужно проверить, куда он приведёт.',
+    clue: 'Если увидишь тихий двор или витрину с огоньками — ты на правильном пути.'
+  },
+  {
+    title: 'Тайна городского архива',
+    text: 'В старом деле нашлась новая координата. Дойди до неё и поставь отметку в архиве.',
+    clue: 'Архив любит тех, кто не сворачивает за пять минут до финала.'
+  },
+  {
+    title: 'Проверка алиби у площади',
+    text: 'Один слишком спокойный уголок города требует проверки. Сегодня он станет твоей точкой расследования.',
+    clue: 'Главная подсказка — просто продолжать идти.'
   },
   {
     title: 'Операция “Тихий квартал”',
-    text: 'Есть подозрение, что где-то там осталась важная деталь. Дойди до зоны и закрой сегодняшний эпизод расследования.'
+    text: 'Поступил сигнал из тихого квартала. Нужно дойти до зоны и подтвердить, что всё под контролем.',
+    clue: 'Самые важные дела иногда выглядят как обычная прогулка.'
   },
   {
-    title: 'Кодовое имя: Лунный след',
-    text: 'След ведёт через город. Иди спокойно: дело не терпит суеты, но любит уверенные шаги.'
+    title: 'Секрет старого сквера',
+    text: 'Кто-то оставил послание рядом с зелёной зоной. Проверь место и закрой вечернее дело.',
+    clue: 'Следи за фонарями: они часто знают больше, чем кажется.'
   },
   {
-    title: 'Проверка алиби',
-    text: 'Один подозрительно спокойный уголок требует проверки. Дойди до точки и зафиксируй результат.'
-  },
-  {
-    title: 'Архивное дело №7',
-    text: 'В старом деле появилась новая координата. Нужно выйти на место и подтвердить находку.'
-  },
-  {
-    title: 'Секретный маршрут',
-    text: 'Карта выдала направление, но детали засекречены. Дойди до зоны — там станет ясно, что миссия выполнена.'
-  },
-  {
-    title: 'Ночная ориентировка',
-    text: 'Поступил сигнал из случайной точки города. Проверь место и возвращай себе звание главного детектива прогулок.'
+    title: 'Кодовое имя: Закатный след',
+    text: 'Маршрут засекречен, но цель уже отмечена. Дойди до зоны — и дело будет раскрыто.',
+    clue: 'Идеальная скорость детектива — та, при которой ещё можно смотреть по сторонам.'
   }
 ];
 
 const winSongs = [
-  'The xx — Intro',
-  'M83 — Midnight City',
-  'Stromae — Santé',
+  'The Paper Kites — Bloom',
+  'Djo — End of Beginning',
+  'Lord Huron — The Night We Met',
   'Kavinsky — Nightcall',
-  'Zaz — Je veux',
-  'Vetusta Morla — Copenhague',
-  'Lana Del Rey — Say Yes To Heaven',
-  'Florence + The Machine — Dog Days Are Over',
-  'Coldplay — Adventure of a Lifetime',
-  'Daft Punk — Instant Crush',
+  'Cigarettes After Sex — Apocalypse',
+  'Angus & Julia Stone — Chateau',
+  'Fleetwood Mac — Dreams',
+  'M83 — Midnight City',
   'AURORA — Runaway',
-  'Jain — Makeba',
-  'Queen — Don’t Stop Me Now',
+  'The xx — Intro',
+  'Vetusta Morla — Copenhague',
+  'Natalia Lafourcade — Hasta la raíz',
+  'Zaz — Je veux',
   'Manu Chao — Me gustas tú',
-  'Natalia Lafourcade — Hasta la raíz'
+  'Queen — Don’t Stop Me Now'
 ];
 
 const waterWords = [
@@ -107,15 +118,23 @@ const goodGeocoderKinds = new Set([
   'house', 'street', 'metro', 'district', 'locality', 'area', 'province', 'country', 'vegetation', 'railway', 'station', 'other'
 ]);
 
-function setStatus(text) { el.statusText.textContent = text; }
-function formatSteps(n) { return new Intl.NumberFormat('ru-RU').format(Math.round(n)); }
+function setStatus(text) {
+  if (el.statusText) el.statusText.textContent = text;
+}
+
+function formatSteps(n) {
+  return new Intl.NumberFormat('ru-RU').format(Math.round(n));
+}
+
 function formatMeters(m) {
   if (!Number.isFinite(m)) return '—';
   return m >= 1000 ? `${(m / 1000).toFixed(1).replace('.', ',')} км` : `${Math.round(m)} м`;
 }
+
 function randomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function toRad(v) { return v * Math.PI / 180; }
 function toDeg(v) { return v * 180 / Math.PI; }
+function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 
 function haversine(a, b) {
   const R = 6371000;
@@ -196,7 +215,7 @@ function setUserPlacemark(coords) {
   if (!state.userPlacemark) {
     state.userPlacemark = new ymaps.Placemark(coords, { hintContent: 'Ты здесь' }, {
       preset: 'islands#circleIcon',
-      iconColor: '#4f7d5a'
+      iconColor: '#315c47'
     });
     state.map.geoObjects.add(state.userPlacemark);
   } else {
@@ -205,19 +224,20 @@ function setUserPlacemark(coords) {
 }
 
 function setTargetObjects(target, radius) {
+  state.winCircle = new ymaps.Circle([target, radius], {
+    hintContent: 'Зона выполнения миссии'
+  }, {
+    fillColor: '#ffd37a35',
+    strokeColor: '#d7a85b',
+    strokeOpacity: 0.95,
+    strokeWidth: 3
+  });
   state.targetPlacemark = new ymaps.Placemark(target, {
     hintContent: 'Точка миссии',
     balloonContent: 'Здесь нужно проверить улику'
   }, {
-    preset: 'islands#redIcon'
-  });
-  state.winCircle = new ymaps.Circle([target, radius], {
-    hintContent: 'Зона выполнения миссии'
-  }, {
-    fillColor: '#4f7d5a33',
-    strokeColor: '#4f7d5a',
-    strokeOpacity: 0.8,
-    strokeWidth: 2
+    preset: 'islands#darkGreenDotIconWithCaption',
+    iconColor: '#a34c36'
   });
   state.map.geoObjects.add(state.winCircle);
   state.map.geoObjects.add(state.targetPlacemark);
@@ -237,12 +257,10 @@ async function getPlaceInfo(coords) {
 
     if (waterLike) return { ok: false, reason: 'water', kind, name: address };
 
-    // Если Яндекс вернул неизвестный тип, не блокируем сразу: маршрут ниже всё равно отфильтрует недоступные места.
     const kindLooksUsable = !kind || goodGeocoderKinds.has(kind) || kind !== 'hydro';
     return { ok: kindLooksUsable, reason: kindLooksUsable ? 'ok' : 'bad-kind', kind, name: address };
   } catch (error) {
     console.warn('Geocode check failed', error);
-    // Если геокодинг не сработал, не считаем это критической ошибкой, но маршрут всё равно должен построиться.
     return { ok: true, reason: 'geocode-unavailable', name: '' };
   }
 }
@@ -262,13 +280,11 @@ function makeCandidatePoints(from, targetMeters, attempts) {
   const count = Math.max(attempts, 12);
 
   for (let i = 0; i < count; i++) {
-    // Для пешего маршрута прямая дистанция обычно меньше реальной длины пути.
     const directDistance = targetMeters * (0.28 + Math.random() * 0.52);
     const bearing = Math.random() * 360;
     candidates.push(destinationPoint(from, directDistance, bearing));
   }
 
-  // Несколько более близких запасных вариантов: они чаще попадают в нормальную городскую сетку.
   for (let i = 0; i < 6; i++) {
     const directDistance = Math.max(250, Math.min(targetMeters * (0.18 + Math.random() * 0.22), 1800));
     const bearing = Math.random() * 360;
@@ -285,7 +301,6 @@ async function pickSafeFallback(from, targetMeters) {
     if (info.ok) return { to: point, route: null, meters: null, fallback: true, placeInfo: info };
   }
 
-  // Последний вариант — очень близкая точка. Она не идеальная, но меньше риск увести далеко в странное место.
   return {
     to: destinationPoint(from, 300, Math.random() * 360),
     route: null,
@@ -300,7 +315,7 @@ async function pickRouteByGoal(from, targetMeters, attempts) {
   const results = [];
 
   for (let i = 0; i < candidates.length; i++) {
-    setStatus(`Ищу безопасную точку и пеший маршрут… ${i + 1}/${candidates.length}`);
+    setStatus(`Ищу закатную улику и пеший маршрут… ${i + 1}/${candidates.length}`);
     try {
       const placeInfo = await getPlaceInfo(candidates[i]);
       if (!placeInfo.ok) continue;
@@ -342,12 +357,21 @@ function startWatching() {
   );
 }
 
+function shortPlaceName(placeInfo) {
+  const raw = placeInfo?.name || '';
+  if (!raw) return '';
+  const parts = raw.split(',').map(part => part.trim()).filter(Boolean);
+  return parts.slice(-2).join(', ').slice(0, 90);
+}
+
 function makeMissionText(caseItem, picked) {
-  const place = picked.placeInfo?.name ? ` Ориентир: ${picked.placeInfo.name}.` : '';
-  if (picked.fallback) {
-    return `${caseItem.text}${place} Дойди до отмеченной зоны — дело будет закрыто.`;
-  }
-  return `${caseItem.text}${place} Маршрут построен, можно начинать расследование.`;
+  const place = shortPlaceName(picked.placeInfo);
+  const placeText = place ? ` Ориентир: ${place}.` : '';
+  return `${caseItem.text}${placeText}`;
+}
+
+function makeCaseNumber() {
+  return `ДЕЛО №${Math.floor(10 + Math.random() * 89)}`;
 }
 
 async function startQuest() {
@@ -383,13 +407,12 @@ async function startQuest() {
 
     clearMapObjects();
     setUserPlacemark(current);
-    setTargetObjects(state.target, radius);
 
     if (picked.route) {
       picked.route.getPaths().options.set({
-        strokeColor: '#8b6f47',
-        strokeWidth: 5,
-        opacity: 0.9
+        strokeColor: '#ffd37a',
+        strokeWidth: 6,
+        opacity: 0.95
       });
       picked.route.getWayPoints().options.set('visible', false);
       state.map.geoObjects.add(picked.route);
@@ -399,8 +422,12 @@ async function startQuest() {
       state.map.setBounds(ymaps.util.bounds.fromPoints([current, state.target]), { checkZoomRange: true, zoomMargin: 48 });
     }
 
+    setTargetObjects(state.target, radius);
+
+    el.caseNumber.textContent = makeCaseNumber();
     el.missionTitle.textContent = state.activeCase.title;
     el.missionText.textContent = makeMissionText(state.activeCase, picked);
+    el.clueText.textContent = state.activeCase.clue;
     el.stepsText.textContent = `${formatSteps(steps)} шагов`;
     el.winRadiusText.textContent = `${radius} м`;
     el.routeDistanceText.textContent = picked.meters ? formatMeters(picked.meters) : 'тайная точка';
@@ -419,8 +446,6 @@ async function startQuest() {
   }
 }
 
-function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
-
 function makeYandexRouteLink(from, to) {
   const rtext = `${from[0]},${from[1]}~${to[0]},${to[1]}`;
   return `https://yandex.ru/maps/?rtext=${encodeURIComponent(rtext)}&rtt=pd`;
@@ -428,14 +453,25 @@ function makeYandexRouteLink(from, to) {
 
 function completeMission() {
   state.won = true;
+  if (state.watchId !== null) {
+    navigator.geolocation.clearWatch(state.watchId);
+    state.watchId = null;
+  }
+
+  el.questCard.classList.add('hidden');
   el.winCard.classList.remove('hidden');
-  el.winMessage.textContent = `Дело закрыто. Маршрут ${state.routeMeters ? formatMeters(state.routeMeters) : 'засчитан'}. Ты молодец 🌙`;
+  el.winMessage.textContent = `Отличная работа, детектив! Ты дошла до точки. Маршрут ${state.routeMeters ? formatMeters(state.routeMeters) : 'засчитан'}, а город стал чуть безопаснее.`;
 
   if (el.bonusTask) {
     el.bonusTask.innerHTML = `
-      <span>Финальная улика</span>
-      <strong>Послушай: ${escapeHtml(state.activeSong || randomItem(winSongs))}</strong>
-      <small>Это маленький саундтрек к победе. Можно включить по дороге домой или уже дома.</small>
+      <span class="bonus-title">Финальная улика</span>
+      <div class="record-row">
+        <div class="record-icon" aria-hidden="true"></div>
+        <div>
+          <strong>Послушай: ${escapeHtml(state.activeSong || randomItem(winSongs))}</strong>
+          <small>Иногда лучший способ понять улику — пройтись под хорошую музыку и подумать.</small>
+        </div>
+      </div>
     `;
     el.bonusTask.classList.remove('hidden');
   }
@@ -488,16 +524,16 @@ function renderHistory() {
 function celebrate() {
   el.confetti.classList.remove('hidden');
   el.confetti.innerHTML = '';
-  const colors = ['#8b6f47', '#4f7d5a', '#d9a650', '#f1e0cb', '#a45b45'];
-  for (let i = 0; i < 60; i++) {
+  const colors = ['#ffd37a', '#315c47', '#d7a85b', '#f4e4c8', '#a34c36', '#6f7657'];
+  for (let i = 0; i < 70; i++) {
     const piece = document.createElement('i');
     piece.style.left = `${Math.random() * 100}%`;
     piece.style.background = colors[i % colors.length];
-    piece.style.animationDelay = `${Math.random() * 0.4}s`;
+    piece.style.animationDelay = `${Math.random() * 0.45}s`;
     piece.style.transform = `rotate(${Math.random() * 180}deg)`;
     el.confetti.append(piece);
   }
-  setTimeout(() => el.confetti.classList.add('hidden'), 2600);
+  setTimeout(() => el.confetti.classList.add('hidden'), 2700);
 }
 
 function playWinSound() {
@@ -505,18 +541,18 @@ function playWinSound() {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
-    const notes = [523.25, 659.25, 783.99];
+    const notes = [523.25, 659.25, 783.99, 1046.5];
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.13);
-      gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + idx * 0.13 + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.13 + 0.18);
+      gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + idx * 0.12 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.12 + 0.18);
       osc.connect(gain).connect(ctx.destination);
-      osc.start(ctx.currentTime + idx * 0.13);
-      osc.stop(ctx.currentTime + idx * 0.13 + 0.2);
+      osc.start(ctx.currentTime + idx * 0.12);
+      osc.stop(ctx.currentTime + idx * 0.12 + 0.2);
     });
   } catch (error) {
     console.warn('Sound error', error);
@@ -537,17 +573,19 @@ function setupInstallPrompt() {
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();
     deferredPrompt = event;
-    el.installBtn.classList.remove('hidden');
+    if (el.installBtn) el.installBtn.classList.remove('hidden');
   });
-  el.installBtn.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    el.installBtn.classList.add('hidden');
-  });
+  if (el.installBtn) {
+    el.installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      el.installBtn.classList.add('hidden');
+    });
+  }
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (isIOS && !navigator.standalone) el.iosHint.classList.remove('hidden');
+  if (isIOS && !navigator.standalone && el.iosHint) el.iosHint.classList.remove('hidden');
 }
 
 function registerServiceWorker() {

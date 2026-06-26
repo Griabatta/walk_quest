@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#8b6f47" />
+  <meta name="theme-color" content="#243f32" />
   <meta name="description" content="Личный PWA-квест для вечерних прогулок с детективными миссиями и Яндекс Картами" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Вечерний квест" />
+  <meta name="apple-mobile-web-app-title" content="Вечернее дело" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Вечерний квест</title>
+  <title>Вечернее дело</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
@@ -17,117 +17,152 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="ambient-lights" aria-hidden="true"></div>
+
   <div class="app-shell">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">личная прогулка</p>
-        <h1>Вечерний квест</h1>
+      <button class="round-icon" type="button" aria-label="Настройки">⚙</button>
+      <div class="brand-lockup">
+        <span class="brand-kicker">детективная прогулка</span>
+        <strong>Вечернее дело</strong>
       </div>
-      <button id="installBtn" class="ghost hidden" type="button">Установить</button>
+      <button id="installBtn" class="round-icon install hidden" type="button" aria-label="Установить">⌂</button>
     </header>
 
     <main>
-      <section id="startCard" class="card hero-card">
-        <div class="moon">☾</div>
-        <h2>Куда сегодня дойдём?</h2>
-        <p class="muted">Задай цель в шагах — приложение подберёт безопасную точку, построит пеший маршрут через Яндекс Карты и превратит прогулку в маленькое расследование.</p>
-
-        <label class="field-label" for="stepsInput">Сколько шагов пройти</label>
-        <div class="input-row">
-          <input id="stepsInput" type="number" inputmode="numeric" min="500" max="30000" step="500" value="4000" />
-          <span>шагов</span>
-        </div>
-
-        <div class="chips" aria-label="Быстрый выбор шагов">
-          <button class="chip" data-steps="2000" type="button">2 000</button>
-          <button class="chip" data-steps="4000" type="button">4 000</button>
-          <button class="chip" data-steps="7000" type="button">7 000</button>
-          <button class="chip" data-steps="10000" type="button">10 000</button>
-        </div>
-
-        <details class="settings">
-          <summary>Настройки</summary>
-          <div class="settings-grid">
-            <label>
-              Длина шага, м
-              <input id="strideInput" type="number" min="0.4" max="1" step="0.01" value="0.65" />
-            </label>
-            <label>
-              Радиус победы, м
-              <select id="radiusInput">
-                <option value="50">50</option>
-                <option value="75" selected>75</option>
-                <option value="100">100</option>
-              </select>
-            </label>
-            <label>
-              Сколько вариантов проверять
-              <select id="attemptsInput">
-                <option value="8">8 — быстрее</option>
-                <option value="12" selected>12 — нормально</option>
-                <option value="18">18 — точнее</option>
-              </select>
-            </label>
+      <section id="startCard" class="screen-card start-screen">
+        <div class="town-scene" aria-hidden="true">
+          <div class="sunset"></div>
+          <div class="pine-line pines-back"></div>
+          <div class="pine-line pines-front"></div>
+          <div class="street-row">
+            <div class="building cafe"><span>COFFEE<br>HOUSE</span></div>
+            <div class="building books"><span>BOOKS</span></div>
+            <div class="building hall"><span>COMMUNITY<br>HALL</span></div>
           </div>
-        </details>
+          <div class="string-lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="wet-street"></div>
+        </div>
 
-        <button id="startBtn" class="primary" type="button">Начать миссию</button>
-        <p id="statusText" class="status">Нужно разрешить геолокацию, когда телефон спросит.</p>
-        <p id="iosHint" class="ios-hint hidden">На iPhone установка делается через Safari: Поделиться → На экран «Домой».</p>
+        <div class="case-tag pinned">Детективная<br>прогулка</div>
+        <div class="hero-content">
+          <p class="tiny-label">личное дело</p>
+          <h1>Вечернее<br>дело</h1>
+          <div class="ornament">✦ 🌲 ✦</div>
+          <p class="subtitle">Выбери длину прогулки<br>и начни расследование</p>
+
+          <div class="step-options" aria-label="Быстрый выбор шагов">
+            <button class="chip step-chip" data-steps="2000" type="button"><span>👣</span><strong>2000</strong><em>шагов</em></button>
+            <button class="chip step-chip" data-steps="4000" type="button"><span>👣</span><strong>4000</strong><em>шагов</em></button>
+            <button class="chip step-chip" data-steps="7000" type="button"><span>👣</span><strong>7000</strong><em>шагов</em></button>
+          </div>
+
+          <div class="custom-steps dossier-card">
+            <div class="shoe-mark" aria-hidden="true">🥾</div>
+            <label class="field-label" for="stepsInput">Свой вариант</label>
+            <div class="input-row">
+              <input id="stepsInput" type="number" inputmode="numeric" min="500" max="30000" step="500" value="4000" aria-label="Количество шагов" />
+              <span>шагов</span>
+            </div>
+          </div>
+
+          <details class="settings dossier-card slim">
+            <summary>Настройки расследования</summary>
+            <div class="settings-grid">
+              <label>
+                Длина шага, м
+                <input id="strideInput" type="number" min="0.4" max="1" step="0.01" value="0.65" />
+              </label>
+              <label>
+                Радиус успеха
+                <select id="radiusInput">
+                  <option value="50">50 м</option>
+                  <option value="75" selected>75 м</option>
+                  <option value="100">100 м</option>
+                </select>
+              </label>
+              <label>
+                Варианты маршрута
+                <select id="attemptsInput">
+                  <option value="8">8 — быстрее</option>
+                  <option value="12" selected>12 — нормально</option>
+                  <option value="18">18 — точнее</option>
+                </select>
+              </label>
+            </div>
+          </details>
+
+          <button id="startBtn" class="primary" type="button">Начать расследование</button>
+          <p id="statusText" class="status">Нужно разрешить геолокацию, когда телефон спросит.</p>
+          <p id="iosHint" class="ios-hint hidden">На iPhone установка делается через Safari: Поделиться → На экран «Домой».</p>
+        </div>
+
+        <div class="desk-props" aria-hidden="true">
+          <div class="magnifier"></div>
+          <div class="folder-stamp">ДЕЛО</div>
+          <div class="photo-slip"></div>
+        </div>
       </section>
 
-      <section id="questCard" class="card quest-card hidden">
-        <div class="quest-header">
+      <section id="questCard" class="screen-card quest-screen hidden">
+        <div class="mission-topbar">
+          <button class="round-icon" type="button" aria-label="Меню">☰</button>
+          <span>Текущая миссия</span>
+          <button id="resetBtn" class="round-icon" type="button" aria-label="Новая миссия">↻</button>
+        </div>
+
+        <div class="map-frame">
+          <div id="map" aria-label="Карта прогулки"></div>
+          <div class="map-glow" aria-hidden="true"></div>
+        </div>
+
+        <article class="case-file mission-file">
+          <div class="paper-pin left"></div>
+          <div class="paper-pin right"></div>
+          <p id="caseNumber" class="case-number">ДЕЛО №12</p>
+          <h2 id="missionTitle">Детективная миссия</h2>
+          <p id="missionText" class="mission-text"></p>
+
+          <div class="stats-grid">
+            <div class="stat"><span>До зоны</span><strong id="distanceText">—</strong></div>
+            <div class="stat"><span>Маршрут</span><strong id="routeDistanceText">—</strong></div>
+            <div class="stat"><span>Радиус успеха</span><strong id="winRadiusText">75 м</strong></div>
+            <div class="stat"><span>Цель</span><strong id="stepsText">4 000</strong></div>
+          </div>
+
+          <div class="clue-box">
+            <span>Подсказка</span>
+            <p id="clueText">Бариста слышал что-то странное вчера вечером. Лучше проверить лично.</p>
+          </div>
+
+          <div class="actions">
+            <a id="routeLink" class="secondary" href="#" target="_blank" rel="noopener">Открыть маршрут</a>
+            <button id="centerBtn" class="secondary" type="button">Где я?</button>
+          </div>
+        </article>
+
+        <p class="hint">Держи приложение открытым во время прогулки. Яндекс Карты строят пеший маршрут, а победа засчитывается в выбранном радиусе.</p>
+      </section>
+
+      <section id="winCard" class="screen-card win-screen hidden" aria-live="polite">
+        <div class="string-lights win-lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <article class="case-file victory-file">
+          <h2>Миссия<br>выполнена!</h2>
+          <div class="closed-stamp">ДЕЛО<br>ЗАКРЫТО</div>
+          <p id="winMessage">Ты дошла. Прогулка засчитана.</p>
+        </article>
+
+        <article id="bonusTask" class="case-file bonus-task hidden"></article>
+
+        <div class="win-actions">
+          <button id="againBtn" class="primary" type="button">К новому делу</button>
+        </div>
+      </section>
+
+      <section class="screen-card history-card">
+        <div class="history-header">
           <div>
-            <p class="eyebrow">сегодняшняя миссия</p>
-            <h2 id="missionTitle">Детективная миссия</h2>
-          </div>
-          <button id="resetBtn" class="ghost" type="button">Новая</button>
-        </div>
-
-        <p id="missionText" class="mission-text"></p>
-
-        <div class="stats-grid">
-          <div class="stat">
-            <span>До зоны</span>
-            <strong id="distanceText">—</strong>
-          </div>
-          <div class="stat">
-            <span>Маршрут</span>
-            <strong id="routeDistanceText">—</strong>
-          </div>
-          <div class="stat">
-            <span>Радиус победы</span>
-            <strong id="winRadiusText">75 м</strong>
-          </div>
-          <div class="stat">
-            <span>Цель</span>
-            <strong id="stepsText">4 000</strong>
-          </div>
-        </div>
-
-        <div id="map" aria-label="Карта прогулки"></div>
-
-        <div class="actions">
-          <a id="routeLink" class="secondary" href="#" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
-          <button id="centerBtn" class="secondary" type="button">Центрировать</button>
-        </div>
-
-        <p class="hint">Держи приложение открытым во время прогулки. Маршрут и карта работают через Яндекс Карты; геолокации нужен HTTPS.</p>
-      </section>
-
-      <section id="winCard" class="card win-card hidden" aria-live="polite">
-        <div class="badge">✨</div>
-        <h2>Миссия выполнена!</h2>
-        <p id="winMessage">Ты дошла. Прогулка засчитана.</p>
-        <div id="bonusTask" class="bonus-task hidden"></div>
-        <button id="againBtn" class="primary" type="button">Ещё одна миссия</button>
-      </section>
-
-      <section class="card history-card">
-        <div class="quest-header">
-          <div>
-            <p class="eyebrow">маленькая летопись</p>
+            <p class="tiny-label">городской архив</p>
             <h2>История прогулок</h2>
           </div>
           <button id="clearHistoryBtn" class="ghost" type="button">Очистить</button>

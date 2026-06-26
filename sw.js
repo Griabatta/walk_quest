@@ -1,4 +1,4 @@
-const CACHE_NAME = 'evening-walk-quest-yandex-detective-v3';
+const CACHE_NAME = 'evening-walk-quest-cozy-detective-v4';
 const APP_SHELL = [
   './',
   './index.html',

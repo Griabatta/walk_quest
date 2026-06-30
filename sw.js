@@ -1,4 +1,4 @@
-const CACHE_NAME = 'evening-walk-quest-raster-detective-v5';
+const CACHE_NAME = 'evening-walk-quest-reference-bg-v6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,8 +8,9 @@ const APP_SHELL = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
-  './assets/start-hero.jpg',
-  './assets/win-bg.jpg'
+  './assets/start-screen-bg.jpg',
+  './assets/mission-screen-bg.jpg',
+  './assets/victory-screen-bg.jpg'
 ];
 
 self.addEventListener('install', event => {

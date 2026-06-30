@@ -1,4 +1,4 @@
-const CACHE_NAME = 'evening-walk-quest-reference-bg-v6';
+const CACHE_NAME = 'evening-walk-quest-clean-v6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,10 +7,7 @@ const APP_SHELL = [
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/apple-touch-icon.png',
-  './assets/start-screen-bg.jpg',
-  './assets/mission-screen-bg.jpg',
-  './assets/victory-screen-bg.jpg'
+  './icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', event => {

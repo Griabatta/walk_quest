@@ -1,12 +1,12 @@
 {
   "name": "Вечернее дело",
   "short_name": "Дело",
-  "description": "Личный PWA-квест для вечерних прогулок в стиле уютного детектива маленького города",
+  "description": "Личный PWA-квест для вечерних прогулок с Яндекс Картами",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#173227",
-  "theme_color": "#243f32",
+  "background_color": "#f4efe7",
+  "theme_color": "#f4efe7",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },

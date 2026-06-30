@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'eveningWalkQuest.history.v4.cozyDetectiveYandex';
+const STORAGE_KEY = 'eveningWalkQuest.history.v6.cleanYandex';
 
 const el = {
   installBtn: document.getElementById('installBtn'),
@@ -215,7 +215,7 @@ function setUserPlacemark(coords) {
   if (!state.userPlacemark) {
     state.userPlacemark = new ymaps.Placemark(coords, { hintContent: 'Ты здесь' }, {
       preset: 'islands#circleIcon',
-      iconColor: '#315c47'
+      iconColor: '#2f8f7b'
     });
     state.map.geoObjects.add(state.userPlacemark);
   } else {
@@ -227,8 +227,8 @@ function setTargetObjects(target, radius) {
   state.winCircle = new ymaps.Circle([target, radius], {
     hintContent: 'Зона выполнения миссии'
   }, {
-    fillColor: '#ffd37a35',
-    strokeColor: '#d7a85b',
+    fillColor: '#6c63ff24',
+    strokeColor: '#6c63ff',
     strokeOpacity: 0.95,
     strokeWidth: 3
   });
@@ -237,7 +237,7 @@ function setTargetObjects(target, radius) {
     balloonContent: 'Здесь нужно проверить улику'
   }, {
     preset: 'islands#darkGreenDotIconWithCaption',
-    iconColor: '#a34c36'
+    iconColor: '#6c63ff'
   });
   state.map.geoObjects.add(state.winCircle);
   state.map.geoObjects.add(state.targetPlacemark);
@@ -315,7 +315,7 @@ async function pickRouteByGoal(from, targetMeters, attempts) {
   const results = [];
 
   for (let i = 0; i < candidates.length; i++) {
-    setStatus(`Ищу закатную улику и пеший маршрут… ${i + 1}/${candidates.length}`);
+    setStatus(`Подбираю пеший маршрут… ${i + 1}/${candidates.length}`);
     try {
       const placeInfo = await getPlaceInfo(candidates[i]);
       if (!placeInfo.ok) continue;
@@ -410,7 +410,7 @@ async function startQuest() {
 
     if (picked.route) {
       picked.route.getPaths().options.set({
-        strokeColor: '#ffd37a',
+        strokeColor: '#6c63ff',
         strokeWidth: 6,
         opacity: 0.95
       });
@@ -433,7 +433,7 @@ async function startQuest() {
     el.routeDistanceText.textContent = picked.meters ? formatMeters(picked.meters) : 'тайная точка';
     el.routeLink.href = makeYandexRouteLink(current, state.target);
 
-    setStatus('Миссия готова. Можно идти 🕵️‍♀️');
+    setStatus('Миссия готова. Можно идти.');
     updateDistance();
     startWatching();
   } catch (error) {
@@ -524,7 +524,7 @@ function renderHistory() {
 function celebrate() {
   el.confetti.classList.remove('hidden');
   el.confetti.innerHTML = '';
-  const colors = ['#ffd37a', '#315c47', '#d7a85b', '#f4e4c8', '#a34c36', '#6f7657'];
+  const colors = ['#6c63ff', '#2f8f7b', '#f0b45f', '#ffffff', '#d06464', '#202329'];
   for (let i = 0; i < 70; i++) {
     const piece = document.createElement('i');
     piece.style.left = `${Math.random() * 100}%`;
